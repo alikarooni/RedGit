@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Web Components</title>
+    <link rel="stylesheet" type="text/css" href="./style.css">
+</head>
+<body>
+
+    <header-top name="test"></header-top>
+    <div class="container">
+        <div class="options clearfix">
+            <div class='part'>
+                <text-box label="Redmine Projects" id="redmineProjects" placeholder="Ricochet"/>
+            </div>
+            <div class='part'>
+                <text-box label="Gitlab Projects" id="gitlabProjects" placeholder="Ricochet"/>
+            </div>
+            <div class='part'>
+                <text-box label="Redmine Versions" id="redmineVersions" placeholder="4.14 R1"/>
+            </div>
+            <div class='part'>
+                <text-box label="Gitlab Versions" id="gitlabVersions" placeholder="Main"/>
+            </div>
+            <div class='part'>
+                <datetime-textbox label="Start DateTime" id="startDateTime" />
+            </div>
+            <div class='part'>
+                <datetime-textbox label="End DateTime" id="endDateTime" />
+            </div>
+
+            <button type="button" onclick="click">Search</button>
+        </div>        
+        <div class="list clearfix">
+            <h1>Untracked commits</h1><br />
+            <table-template id="untrackedCommits" />
+        </div>
+        <div class="list clearfix">
+            <h1>Tracked commits</h1><br />
+            <table-template id="trackedCommits" />
+        </div>
+    </div>
+
+
+    <!-- scripts -->
+    <script src="components/headertop.js"></script>
+    <script src="components/textbox.js"></script>
+    <script src="components/datetimetextbox.js"></script>
+    <script src="components/tableTemplate.js"></script>
+
+    <script>
+        formLoad()
+        function formLoad() {
+            fetch('http://localhost:59001/api/redmine/getprojects')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.projects.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#redmineProjects')
+                    element.importDataSource(data);
+                })
+
+            fetch('http://localhost:59001/api/redmine/getversions?projectId=63')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.versions.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#redmineVersions')
+                    element.importDataSource(data);
+                })
+
+            fetch('http://localhost:59001/api/gitlab/getProjects')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#gitlabProjects')
+                    element.importDataSource(data);
+                })
+
+            fetch('http://localhost:59001/api/gitlab/getVersions?projectId=263')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.map(x => { return { 'id': x.commit.id, 'name': 'B-' + x.name } });
+                    const element = document.querySelector('#gitlabVersions')
+                    element.importDataSource(data);
+                })
+
+            fetch('http://localhost:59001/api/gitlab/getTags?projectId=263')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.map(x => { return { 'id': x.commit.id, 'name': 'T-' + x.name } });
+                    const element = document.querySelector('#gitlabVersions')
+                    console.log('data', data)
+                    element.importDataSource(data);
+                })
+        }
+
+        document.querySelector('button').addEventListener('click', function () {
+            let rpI = document.querySelector('#redmineProjects').getAttribute('key')
+            let rvI = document.querySelector('#redmineVersions').getAttribute('key')
+            let gpI = document.querySelector('#gitlabProjects').getAttribute('key')
+            let gvI = document.querySelector('#gitlabVersions').getAttribute('text')
+            let startdt = document.querySelector('#startDateTime').getAttribute('value')
+            let enddt = document.querySelector('#endDateTime').getAttribute('value')
+
+            if (rpI == null || rvI == null || gpI == null || gvI == null) {
+                return;
+            }                
+            var url = `http://localhost:59001/api/`
+            url += `getissues?redmineProjectId=${rpI}&redmineVersionId=${rvI}&gitlabProjectId=${gpI}&gitlabVersionId=${gvI}`
+            if (startdt !== null && enddt !== null)
+                url += `&since=${startdt}&until=${enddt}`
+
+            this.innerText = "Loading..."
+            fetch(url)
+                .then(async (response) => {
+                    this.innerText = "Search"
+                    const res = await response.json();
+                    console.log('issues data:', res)
+
+                    let untracked = document.querySelector('#untrackedCommits')
+                    untracked.clearContent()
+                    untracked.setTitles(['IssueId', 'Title', 'Message', 'RemineVersion']);
+                    untracked.setDataSource(res.untrackedCommits.map(x => {
+                        let aTag = document.createElement('a')
+                        aTag.appendChild(document.createTextNode(x.commit.title))
+                        aTag.setAttribute('href', x.commit.web_url)
+
+                        let redmineaTag = document.createElement('a')
+                        redmineaTag.appendChild(document.createTextNode(x.redmineVersion.name))
+                        redmineaTag.setAttribute('href', `https://redmine.jotron.com/versions/${x.redmineVersion.id}`)
+                        return {
+                            'IssueId': x.id,
+                            'Title':  aTag,
+                            'Message': x.commit.message,
+                            'RemineVersion': redmineaTag
+                        }
+                    }));
+
+                    var g = res.trackedCommits.map(x => {
+                        let aTag = document.createElement('a')
+                        aTag.appendChild(document.createTextNode(x.redmine.subject))
+                        aTag.setAttribute('href', `https://redmine.jotron.com/issues/${x.id}`)
+                        return {
+                            'IssueId': x.id, 'Subject': aTag, 'Author': x.redmine.author.name,
+                            'Commits': document.createElement('table-template')
+                                .setTitles(x.commit.length > 0 ? ['Title', 'Message', 'Short_Id'] : [])
+                                .setDataSource(x.commit.map((c) => {
+
+                                    let aTag = document.createElement('a')
+                                    aTag.appendChild(document.createTextNode(c.commit.title))
+                                    aTag.setAttribute('href', c.commit.web_url)
+                                    const ret = {
+                                        'Title': aTag, 'Message': c.commit.message,
+                                        'Short_Id': c.commit.short_id
+                                    }
+                                    return ret;
+                                }))
+                        };
+                    });
+
+                    let tracked = document.querySelector('#trackedCommits')
+                    tracked.clearContent()
+                    tracked.setTitles(['IssueId', 'Subject', 'Author', 'Commits']);
+                    tracked.setDataSource(g);
+                });
+        });
+
+                //let t = document.querySelector('#version')
+                //console.log(t.getAttribute('dataSources'));
+
+                //document.querySelector('button').addEventListener('click', function () {
+                //    let f = document.createElement('table-template');
+                //    f.setTitles(['id', 'title', 'message']);
+                //    document.querySelector(".container").appendChild(f)
+                    //getRedmineIssues(0, 100);
+                    //let t = document.querySelector('table-template')
+                    //t.setTitles(['reza', 'hoda', 'jaber', 'ali']);
+                    //t.setDataSource(`{"data":
+                    //    [
+                    //        { "reza": "1", "hoda": "2", "jaber": "3", "ali": "4" },
+                    //        { "reza": "5", "hoda": "6", "jaber": "7", "ali": "8" },
+                    //        { "reza": "9", "hoda": "10", "jaber": "11", "ali": "12" },
+                    //        { "reza": "13", "hoda": "14", "jaber": "15", "ali": "16" }
+                    //    ]
+                    //    }`);
+                //});
+    </script>
+</body>
+</html>

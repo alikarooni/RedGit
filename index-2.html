@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Web Components</title>
+    <link rel="stylesheet" type="text/css" href="./style.css">
+</head>
+<body>
+
+    <header-top name="test"></header-top>
+    <div class="container">
+        <div class="options clearfix">
+            <div class='part'>
+                <text-box label="Projects" id="projects" />
+            </div>
+            <div class='part'>
+                <text-box label="Versions" id="versions"/>
+            </div>
+            <div class='part'>
+                <text-box label="label789" />
+            </div>
+        </div>
+        <button type="button" onclick="click">button</button>
+        <div class="list clearfix">
+            <table-template />
+        </div>
+    </div>
+
+
+    <!-- scripts -->
+    <script src="components/headertop.js"></script>
+    <script src="components/textbox.js"></script>
+    <script src="components/tableTemplate.js"></script>
+    <script src="redmine.js"></script>
+
+    <script>
+        formLoad()
+        function formLoad() {
+            fetch('http://localhost:59001/api/redmine/getprojects')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.projects.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#projects')
+                    element.importDataSource(data);
+                })
+
+            fetch('http://localhost:59001/api/redmine/getversions?projectId=63')
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.versions.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#versions')
+                    element.importDataSource(data);
+                })
+
+            fetch('http://localhost:59001/api/redmine/getissues?projecTId=63&versionId=791')
+                .then(async (response) => {
+                    const res = await response.json();
+                    console.log('issues data:', res)
+
+                    var g = res.map(x => {
+                        return {
+                            'issueId': x.issueId, 'subject': x.issue.subject, 'author': x.issue.author.name,
+                            'commits': document.createElement('table-template')
+                                .setTitles(x.commits.length > 0? ['id', 'title', 'message']: [])
+                                .setDataSource(x.commits.map((c) => {
+                                    var ret = { 'id': c.short_id, 'title': c.title, 'message': c.message };
+                                    return ret;
+                                }))
+                        };
+                    });
+
+                    let maintable = document.querySelector('table-template')
+                    maintable.setTitles(['issueId', 'subject', 'author', 'commits']);
+                    maintable.setDataSource(g);
+                });
+        }
+        //let t = document.querySelector('#version')
+        //console.log(t.getAttribute('dataSources'));
+
+        document.querySelector('button').addEventListener('click', function () {
+            let f = document.createElement('table-template');
+            f.setTitles(['id', 'title', 'message']);
+            document.querySelector(".container").appendChild(f)
+            //getRedmineIssues(0, 100);
+            //let t = document.querySelector('table-template')
+            //t.setTitles(['reza', 'hoda', 'jaber', 'ali']);
+            //t.setDataSource(`{"data":
+            //    [
+            //        { "reza": "1", "hoda": "2", "jaber": "3", "ali": "4" },
+            //        { "reza": "5", "hoda": "6", "jaber": "7", "ali": "8" },
+            //        { "reza": "9", "hoda": "10", "jaber": "11", "ali": "12" },
+            //        { "reza": "13", "hoda": "14", "jaber": "15", "ali": "16" }
+            //    ]
+            //    }`);
+        });
+    </script>
+</body>
+</html>
