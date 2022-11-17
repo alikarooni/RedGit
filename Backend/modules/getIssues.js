@@ -29,9 +29,7 @@ async function getCommits(query) {
         for (var i = 0; i < tagsPromisesResult.length; i++) {
             const tags = JSON.parse(tagsPromisesResult[i])
 
-            //console.log(`ANY result: ${any(tags, query.gitlabendpoint)}, ${query.gitlabendpoint}`, tags)
-            if (any(tags, query.gitlabendpoint)) {
-                console.log('STOP STOP STOP STOP STOP STOP STOP STOP STOP STOP')
+            if (any(tags, query.gitlabendpoint)) {               
                 console.log('startTag has been founded:', query.gitlabendpoint, tags, commitsJson[i].id)
                 brk = true;
             }

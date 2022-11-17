@@ -91,8 +91,6 @@
                 })
 
             const onRedmineProjectChanged = () => {
-                alert('log me...')
-
                 let rp = document.querySelector('#redmineProjects').getAttribute('key')
                 fetch(`${window.location}api/redmine/getversions?projectId=${rp}`)
                     .then(async (response) => {
@@ -112,8 +110,6 @@
                 })
 
             const onGitlabProjectChanged = () => {
-                alert('log me...')
-
                 let gp = document.querySelector('#gitlabProjects').getAttribute('key')
                 fetch(`${window.location}api/gitlab/getVersions?projectId=${gp}`)
                     .then(async (response) => {
