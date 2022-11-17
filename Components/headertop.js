@@ -22,7 +22,7 @@ template.innerHTML = `
 </style>
 
     <header>
-        <h1>Gitlab-Redmine</h1>
+        <b><h1>Red-Git</h1></b>
     </header>   
 `;
 

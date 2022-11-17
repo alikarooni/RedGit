@@ -36,7 +36,6 @@ async function getCommitsByIssueId(projectId, issueId) {
     var mergeRequests = await findMergeRequests(projectId, issueId);
 
     if (mergeRequests === undefined) {
-        console.log('mergeRequests', mergeRequests)
         return null
     }
 
@@ -79,8 +78,6 @@ async function getCommitsByIssueIds(projectId, issueIds) {
         JSON.parse(x).forEach((com) => { commits.push(com) })
     });
 
-    commits.forEach((commit) => { console.log(commit.title) })
-
     return JSON.stringify(commits);
 }
 
@@ -113,7 +110,7 @@ async function getCommits(projectId, versionId, since, until, page = 1, perPage 
 }
 
 async function getCommitTags(projectId, commitId) {
-    return await gitlabFetch(`/projects/${projectId}/repository/commits/${commitId}/refs?type=tag`)
+    return await gitlabFetch(`/projects/${projectId}/repository/commits/${commitId}/refs?page=1&per_page=100`)
 }
 
 async function getTags(projectId) {    

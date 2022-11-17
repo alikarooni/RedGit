@@ -65,6 +65,7 @@ header {
     text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
     border: 1px solid rgba(0,0,0,0.1);
     border-radius: 5px 5px 5px 5px;
+    background-color: #dbdbdb;
 }
 
     .options .part {
@@ -74,17 +75,37 @@ header {
         padding: 0px;
     }
 
+        .options .part span:first-child {
+            float: left;
+            margin-left: 40%;
+            position: relative;
+            padding: 0px;
+        }
+
+        .options .part span {
+            float: left;
+            margin-left: 10px;
+            position: relative;
+            padding: 0px;
+        }
+
+            .options .part span a {
+                color: darkblue;
+                cursor: pointer;
+            }
+
     .options button {
         vertical-align: bottom;
         color: #fff;
-        background-color: #007bff;
-        border-color: #007bff;
-        width: 11%;
+        background-color: #354e7e;
+        border-color: #354e7e;
+        width: 35%;
         font-weight: 400;
         text-align: center;
         white-space: nowrap;
-        margin-top: 105px;
-        margin-left: 30px;
+        margin-top: 15px;
+        margin-right: 2%;
+        float: right;
         padding: .5rem 1rem;
         font-size: 1.2rem;
         line-height: 1;
@@ -114,6 +135,7 @@ header {
     font-weight: 600;
     border: 1px solid rgba(0,0,0,0.1);
     border-radius: 5px 5px 5px 5px;
+    background-color: #dbdbdb;
 }
 
     .list table {
