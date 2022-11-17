@@ -20,6 +20,7 @@ class Textbox extends HTMLElement {
         this.nextEvent.bind(this)
         this.onFocusOut.bind(this)
         this.importDataSource.bind(this)
+        this.setOnChangeCallback.bind(this)
         this.setValue.bind(this)
         this.createUlList(this.shadowRoot.dataSources)
 
@@ -31,6 +32,9 @@ class Textbox extends HTMLElement {
         else {
             list.forEach(x => this.shadowRoot.dataSources.push(x))
         }
+    }
+    setOnChangeCallback(callback) {
+            this.shadowRoot.onchangeCallbackcallback = callback
     }
     createUlList(list) {
         let ul = this.shadowRoot.querySelector('ul')
@@ -46,7 +50,6 @@ class Textbox extends HTMLElement {
 
         ul.setAttribute('hidden', 'hidden')
     }
-
     liClick(e) {
         if (this.eventQueue === undefined) {
             this.eventQueue = [{ 'sender': 'li', 'key': e.currentTarget.getAttribute('key'), 'value': e.currentTarget.getAttribute('value') }]
@@ -58,7 +61,7 @@ class Textbox extends HTMLElement {
     }
     onInput(e) {
         this.createUlList(this.shadowRoot.dataSources.filter(x => x.name.toLowerCase().includes(e.target.value.toLowerCase())).slice(0, 15))
-        this.shadowRoot.querySelector(".listbox").removeAttribute('hidden')
+        this.shadowRoot.querySelector(".listbox").removeAttribute('hidden')        
     }
     async onChange(e) {
         let str = e.target.value
@@ -66,13 +69,14 @@ class Textbox extends HTMLElement {
         await new Promise(r => setTimeout(r, 300));
         if (str.length == 0 || this.shadowRoot.dataSources.filter(x => x == str).length == 1)
             this.shadowRoot.querySelector(".listbox").setAttribute('hidden', 'hidden')
+
+        if (this.shadowRoot.onchangeCallbackcallback !== undefined)
+            this.shadowRoot.onchangeCallbackcallback()
     }
     setValue(txt) {
         this.shadowRoot.querySelector('input').value = txt
     }
-
     onFocusOut(e) {
-        console.log('focus')
         if (this.eventQueue === undefined) {
             this.eventQueue = [{ 'sender': 'div', 'key': e.currentTarget.getAttribute('key'), 'value': e.currentTarget.getAttribute('value')  }]
             this.eventLoader = setTimeout(this.nextEvent, 200, this)
@@ -81,7 +85,6 @@ class Textbox extends HTMLElement {
             this.eventQueue.push({ 'sender': 'div', 'key': e.currentTarget.getAttribute('key'), 'value': e.currentTarget.getAttribute('value') });
         }
     }
-
     nextEvent(self) {
         if (self.eventQueue !== undefined && self.eventQueue.length > 0) {
             const li = self.eventQueue.filter(x => x.sender === 'li')
@@ -105,7 +108,6 @@ class Textbox extends HTMLElement {
         self.eventQueue = undefined;
         self.eventLoader = null;
     }
-
     render() {
         this.shadowRoot.innerHTML = `
 <style>

@@ -17,7 +17,7 @@
                 <span><a onclick="quickSelect('Redmine-Project-Ricochet')">Project: Ricochet</a></span>
             </div>
             <div class='part'>
-                <text-box label="Gitlab Projects" id="gitlabProjects" placeholder="Empty"/>
+                <text-box label="Gitlab Projects" id="gitlabProjects" placeholder="Empty" />
             </div>
             <div class='part'>
                 <text-box label="Redmine Projects" id="redmineProjects" placeholder="Empty" />
@@ -54,15 +54,14 @@
     <script src="components/tableTemplate.js"></script>
 
     <script>
-        
-        function quickSelect(key) {            
+        function quickSelect(key) {
             switch (key) {
                 case 'Gitlab-Project-Ricochet': {
-                        const txt = document.querySelector('#gitlabProjects');
-                        txt.setAttribute('key', '263');
-                        txt.setValue('Ricochet')
-                        break;
-                    }
+                    const txt = document.querySelector('#gitlabProjects');
+                    txt.setAttribute('key', '263');
+                    txt.setValue('Ricochet')
+                    break;
+                }
                 case 'Gitlab-StartPoint-Main': {
                     const txt = document.querySelector('#gitlabStartPoint');
                     txt.setAttribute('key', 'Main');
@@ -81,8 +80,6 @@
         formLoad()
 
         function formLoad() {
-            let rp = document.querySelector('#redmineProjects').getAttribute('key')
-            let gp = document.querySelector('#gitlabProjects').getAttribute('key')
 
             fetch(`${window.location}api/redmine/getprojects`)
                 .then(async (response) => {
@@ -90,14 +87,20 @@
                     const data = res.projects.map(x => { return { 'id': x.id, 'name': x.name } });
                     const element = document.querySelector('#redmineProjects')
                     element.importDataSource(data);
+                    element.setOnChangeCallback(onRedmineProjectChanged);
                 })
 
-            //fetch(`${window.location}api/redmine/getversions?projectId=${rp}`)
-            //    .then(async (response) => {
-            //        const res = await response.json();
-            //        const data = res.versions.map(x => { return { 'id': x.id, 'name': x.name } });
-            //        document.querySelector('#redmineVersions').importDataSource(data);                    
-            //    })
+            const onRedmineProjectChanged = () => {
+                alert('log me...')
+
+                let rp = document.querySelector('#redmineProjects').getAttribute('key')
+                fetch(`${window.location}api/redmine/getversions?projectId=${rp}`)
+                    .then(async (response) => {
+                        const res = await response.json();
+                        const data = res.versions.map(x => { return { 'id': x.id, 'name': x.name } });
+                        document.querySelector('#redmineVersions').importDataSource(data);
+                    })
+            }
 
             fetch(`${window.location}api/gitlab/getProjects`)
                 .then(async (response) => {
@@ -105,24 +108,30 @@
                     const data = res.map(x => { return { 'id': x.id, 'name': x.name } });
                     const element = document.querySelector('#gitlabProjects')
                     element.importDataSource(data);
+                    element.setOnChangeCallback(onGitlabProjectChanged);
                 })
 
-            //fetch(`${window.location}api/gitlab/getVersions?projectId=${gp}`)
-            //    .then(async (response) => {
-            //        const res = await response.json();
-            //        const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
-            //        document.querySelector('#gitlabStartPoint').importDataSource(data);
-            //        //document.querySelector('#gitlabEndPoint').importDataSource(data);                    
-            //    })
+            const onGitlabProjectChanged = () => {
+                alert('log me...')
 
-            //fetch(`${window.location}api/gitlab/getTags?projectId=${gp}`)
-            //    .then(async (response) => {
-            //        const res = await response.json();
-            //        const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
+                let gp = document.querySelector('#gitlabProjects').getAttribute('key')
+                fetch(`${window.location}api/gitlab/getVersions?projectId=${gp}`)
+                    .then(async (response) => {
+                        const res = await response.json();
+                        const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
+                        document.querySelector('#gitlabStartPoint').importDataSource(data);
+                        //document.querySelector('#gitlabEndPoint').importDataSource(data);
+                    })
 
-            //        document.querySelector('#gitlabStartPoint').importDataSource(data);
-            //        document.querySelector('#gitlabEndPoint').importDataSource(data);
-            //    })
+                fetch(`${window.location}api/gitlab/getTags?projectId=${gp}`)
+                    .then(async (response) => {
+                        const res = await response.json();
+                        const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
+
+                        document.querySelector('#gitlabStartPoint').importDataSource(data);
+                        document.querySelector('#gitlabEndPoint').importDataSource(data);
+                    })
+            }
         }
 
         document.querySelector('button').addEventListener('click', function () {
@@ -144,7 +153,7 @@
                 .then(async (response) => {
                     this.innerText = "Search"
                     const res = await response.json();
-                    console.log('issues data:', res)
+                    //console.log('issues data:', res)
 
                     let untracked = document.querySelector('#untrackedCommits')
                     untracked.clearContent()
@@ -158,38 +167,38 @@
                             redmineaTag.appendChild(document.createTextNode(x.redmineVersion.name))
                             redmineaTag.setAttribute('href', `https://redmine.jotron.com/versions/${x.redmineVersion.id}`)
                         }
-                        
+
                         return {
                             'IssueId': x.id,
                             'RemineVersion': redmineaTag,
                             'Commits': document.createElement('table-template')
                                 .setSizes(['3%', '3%', '35%', '51%'])
                                 .setTitles(['Short_Id', 'AuthorName', 'Title', 'Message'])
-                                       .setDataSource(x.commits.map((c) => {
+                                .setDataSource(x.commits.map((c) => {
 
-                                            let aTag = document.createElement('a')
-                                            aTag.appendChild(document.createTextNode(c.title))
-                                            aTag.setAttribute('href', c.web_url)
+                                    let aTag = document.createElement('a')
+                                    aTag.appendChild(document.createTextNode(c.title))
+                                    aTag.setAttribute('href', c.web_url)
 
-                                            return {
-                                                'Short_Id': c.short_id,
-                                                'AuthorName': c.author_name,
-                                                'Title': aTag,
-                                                'Message': c.message,
-                                            }
-                                       }))
+                                    return {
+                                        'Short_Id': c.short_id,
+                                        'AuthorName': c.author_name,
+                                        'Title': aTag,
+                                        'Message': c.message,
+                                    }
+                                }))
                         }
                     }));
 
                     var g = res.trackedCommits.map(x => {
                         let aTag = document.createElement('a')
                         aTag.appendChild(document.createTextNode(x.redmine.subject))
-                        aTag.setAttribute('href', `https://redmine.jotron.com/issues/${x.id}`)                        
+                        aTag.setAttribute('href', `https://redmine.jotron.com/issues/${x.id}`)
                         return {
-                            'IssueId': x.id,                            
+                            'IssueId': x.id,
                             'Status': x.redmine.status.name,
                             'Assignee': x.redmine.assigned_to === undefined ? '' : x.redmine.assigned_to.name,
-                            'Subject': aTag,                            
+                            'Subject': aTag,
                             'Commits': document.createElement('table-template')
                                 .setSizes(['3%', '3%', '35%', '51%'])
                                 .setTitles(x.commit.length > 0 ? ['Short_Id', 'AuthorName', 'Title', 'Message'] : [])
