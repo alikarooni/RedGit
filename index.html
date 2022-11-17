@@ -53,13 +53,69 @@
     <script src="components/datetimetextbox.js"></script>
     <script src="components/tableTemplate.js"></script>
 
-    <script>
+    <script>        
+        formLoad()
+
+        const onRedmineProjectChanged = () => {
+            let rp = document.querySelector('#redmineProjects').getAttribute('key')
+            fetch(`${window.location}api/redmine/getversions?projectId=${rp}`)
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.versions.map(x => { return { 'id': x.id, 'name': x.name } });
+                    document.querySelector('#redmineVersions').importDataSource(data);
+                })
+        }
+
+        const onGitlabProjectChanged = () => {
+            let gp = document.querySelector('#gitlabProjects').getAttribute('key')
+            fetch(`${window.location}api/gitlab/getVersions?projectId=${gp}`)
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
+                    document.querySelector('#gitlabStartPoint').importDataSource(data);
+                    //document.querySelector('#gitlabEndPoint').importDataSource(data);
+                })
+
+            fetch(`${window.location}api/gitlab/getTags?projectId=${gp}`)
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
+
+                    document.querySelector('#gitlabStartPoint').importDataSource(data);
+                    document.querySelector('#gitlabEndPoint').importDataSource(data);
+                })
+        }
+
+        function formLoad() {
+
+            fetch(`${window.location}api/redmine/getprojects`)
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.projects.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#redmineProjects')
+                    element.importDataSource(data);
+                    element.setOnChangeCallback(onRedmineProjectChanged);
+                })
+
+            
+
+            fetch(`${window.location}api/gitlab/getProjects`)
+                .then(async (response) => {
+                    const res = await response.json();
+                    const data = res.map(x => { return { 'id': x.id, 'name': x.name } });
+                    const element = document.querySelector('#gitlabProjects')
+                    element.importDataSource(data);
+                    element.setOnChangeCallback(onGitlabProjectChanged);
+                })
+        }
+
         function quickSelect(key) {
             switch (key) {
                 case 'Gitlab-Project-Ricochet': {
                     const txt = document.querySelector('#gitlabProjects');
                     txt.setAttribute('key', '263');
                     txt.setValue('Ricochet')
+                    onGitlabProjectChanged()
                     break;
                 }
                 case 'Gitlab-StartPoint-Main': {
@@ -73,60 +129,9 @@
                     const txt = document.querySelector('#redmineProjects');
                     txt.setAttribute('key', '63');
                     txt.setValue('Ricochet')
+                    onRedmineProjectChanged();
                     break;
                 }
-            }
-        }
-        formLoad()
-
-        function formLoad() {
-
-            fetch(`${window.location}api/redmine/getprojects`)
-                .then(async (response) => {
-                    const res = await response.json();
-                    const data = res.projects.map(x => { return { 'id': x.id, 'name': x.name } });
-                    const element = document.querySelector('#redmineProjects')
-                    element.importDataSource(data);
-                    element.setOnChangeCallback(onRedmineProjectChanged);
-                })
-
-            const onRedmineProjectChanged = () => {
-                let rp = document.querySelector('#redmineProjects').getAttribute('key')
-                fetch(`${window.location}api/redmine/getversions?projectId=${rp}`)
-                    .then(async (response) => {
-                        const res = await response.json();
-                        const data = res.versions.map(x => { return { 'id': x.id, 'name': x.name } });
-                        document.querySelector('#redmineVersions').importDataSource(data);
-                    })
-            }
-
-            fetch(`${window.location}api/gitlab/getProjects`)
-                .then(async (response) => {
-                    const res = await response.json();
-                    const data = res.map(x => { return { 'id': x.id, 'name': x.name } });
-                    const element = document.querySelector('#gitlabProjects')
-                    element.importDataSource(data);
-                    element.setOnChangeCallback(onGitlabProjectChanged);
-                })
-
-            const onGitlabProjectChanged = () => {
-                let gp = document.querySelector('#gitlabProjects').getAttribute('key')
-                fetch(`${window.location}api/gitlab/getVersions?projectId=${gp}`)
-                    .then(async (response) => {
-                        const res = await response.json();
-                        const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
-                        document.querySelector('#gitlabStartPoint').importDataSource(data);
-                        //document.querySelector('#gitlabEndPoint').importDataSource(data);
-                    })
-
-                fetch(`${window.location}api/gitlab/getTags?projectId=${gp}`)
-                    .then(async (response) => {
-                        const res = await response.json();
-                        const data = res.map(x => { return { 'id': x.name, 'name': x.name } });
-
-                        document.querySelector('#gitlabStartPoint').importDataSource(data);
-                        document.querySelector('#gitlabEndPoint').importDataSource(data);
-                    })
             }
         }
 
