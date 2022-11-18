@@ -58,6 +58,8 @@
 
         const onRedmineProjectChanged = () => {
             let rp = document.querySelector('#redmineProjects').getAttribute('key')
+            document.querySelector('#redmineVersions').clearDataSource()
+
             fetch(`${window.location}api/redmine/getversions?projectId=${rp}`)
                 .then(async (response) => {
                     const res = await response.json();
@@ -68,6 +70,9 @@
 
         const onGitlabProjectChanged = () => {
             let gp = document.querySelector('#gitlabProjects').getAttribute('key')
+            document.querySelector('#gitlabStartPoint').clearDataSource()
+            document.querySelector('#gitlabEndPoint').clearDataSource()
+
             fetch(`${window.location}api/gitlab/getVersions?projectId=${gp}`)
                 .then(async (response) => {
                     const res = await response.json();
@@ -135,6 +140,16 @@
             }
         }
 
+        function createATag(url, text) {
+            aTag = document.createElement('a')
+            aTag.addEventListener('click', () => { window.open(url); return false; });
+            aTag.appendChild(document.createTextNode(text))
+            aTag.style.cursor = 'pointer';
+            aTag.style.color = 'blue';
+            aTag.style.textDecoration = 'underline';
+            return aTag
+        }
+
         document.querySelector('button').addEventListener('click', function () {
             let rp = document.querySelector('#redmineProjects').getAttribute('key')
             let rv = document.querySelector('#redmineVersions').getAttribute('key')
@@ -162,12 +177,8 @@
                     untracked.setTitles(['IssueId', 'RemineVersion', 'Commits']) // 'Title', 'Message', 'Short_id']);
                     untracked.setDataSource(res.untrackedCommits.map(x => {
 
-                        let redmineaTag = '';
-                        if (x.redmineVersion.name !== undefined) {
-                            redmineaTag = document.createElement('a')
-                            redmineaTag.appendChild(document.createTextNode(x.redmineVersion.name))
-                            redmineaTag.setAttribute('href', `https://redmine.jotron.com/versions/${x.redmineVersion.id}`)
-                        }
+                        const redmineaTag = x.redmineVersion.name === undefined ? '' : 
+                            createATag(`https://redmine.jotron.com/versions/${x.redmineVersion.id}`, x.redmineVersion.name);
 
                         return {
                             'IssueId': x.id,
@@ -177,14 +188,10 @@
                                 .setTitles(['Short_Id', 'AuthorName', 'Title', 'Message'])
                                 .setDataSource(x.commits.map((c) => {
 
-                                    let aTag = document.createElement('a')
-                                    aTag.appendChild(document.createTextNode(c.title))
-                                    aTag.setAttribute('href', c.web_url)
-
                                     return {
                                         'Short_Id': c.short_id,
                                         'AuthorName': c.author_name,
-                                        'Title': aTag,
+                                        'Title': createATag(c.web_url, c.title),
                                         'Message': c.message,
                                     }
                                 }))
@@ -192,26 +199,19 @@
                     }));
 
                     var g = res.trackedCommits.map(x => {
-                        let aTag = document.createElement('a')
-                        aTag.appendChild(document.createTextNode(x.redmine.subject))
-                        aTag.setAttribute('href', `https://redmine.jotron.com/issues/${x.id}`)
                         return {
                             'IssueId': x.id,
                             'Status': x.redmine.status.name,
                             'Assignee': x.redmine.assigned_to === undefined ? '' : x.redmine.assigned_to.name,
-                            'Subject': aTag,
+                            'Subject': createATag(`https://redmine.jotron.com/issues/${x.id}`, x.redmine.subject),
                             'Commits': document.createElement('table-template')
                                 .setSizes(['3%', '3%', '35%', '51%'])
                                 .setTitles(x.commit.length > 0 ? ['Short_Id', 'AuthorName', 'Title', 'Message'] : [])
                                 .setDataSource(x.commit.map((c) => {
-
-                                    let aTag = document.createElement('a')
-                                    aTag.appendChild(document.createTextNode(c.commit.title))
-                                    aTag.setAttribute('href', c.commit.web_url)
                                     const ret = {
                                         'Short_Id': c.commit.short_id,
                                         'AuthorName': c.commit.author_name,
-                                        'Title': aTag,
+                                        'Title': createATag(c.commit.web_url, c.commit.title),
                                         'Message': c.commit.message
                                     }
                                     return ret;

@@ -10,8 +10,8 @@ class Textbox extends HTMLElement {
         this.shadowRoot.querySelector('label').innerText = this.getAttribute('label');
         this.shadowRoot.querySelector('input').setAttribute('placeholder', this.getAttribute('placeholder'));
         let textbox = this.shadowRoot.querySelector('input');
-        textbox.addEventListener('change', this.onChange.bind(this));
         textbox.addEventListener('input', this.onInput.bind(this));
+        textbox.addEventListener('keydown', this.onKeyDown.bind(this));
         this.shadowRoot.dataSources = this.getAttribute('dataSources') !== null ?
             this.getAttribute('dataSources').split(",") : [];
 
@@ -20,6 +20,8 @@ class Textbox extends HTMLElement {
         this.nextEvent.bind(this)
         this.onFocusOut.bind(this)
         this.importDataSource.bind(this)
+        this.selectedChanged.bind(this)
+        this.clearDataSource.bind(this)
         this.setOnChangeCallback.bind(this)
         this.setValue.bind(this)
         this.createUlList(this.shadowRoot.dataSources)
@@ -33,8 +35,12 @@ class Textbox extends HTMLElement {
             list.forEach(x => this.shadowRoot.dataSources.push(x))
         }
     }
+    clearDataSource(callback) {
+        this.shadowRoot.dataSources = [];
+        return this;
+    }
     setOnChangeCallback(callback) {
-            this.shadowRoot.onchangeCallbackcallback = callback
+        this.shadowRoot.onchangeCallbackcallback = callback
     }
     createUlList(list) {
         let ul = this.shadowRoot.querySelector('ul')
@@ -43,6 +49,7 @@ class Textbox extends HTMLElement {
             let li = document.createElement('li')
             li.appendChild(document.createTextNode(list[i].name.trim()))
             li.addEventListener('click', this.liClick.bind(this), true)
+            li.addEventListener('mouseover', this.liMouseOver.bind(this), true)
             li.setAttribute('value', list[i].name.trim());
             li.setAttribute('key', list[i].id);
             ul.appendChild(li)
@@ -59,18 +66,79 @@ class Textbox extends HTMLElement {
             this.eventQueue.push({ 'sender': 'li', 'key': e.currentTarget.getAttribute('key'), 'value': e.currentTarget.getAttribute('value') });
         }
     }
-    onInput(e) {
-        this.createUlList(this.shadowRoot.dataSources.filter(x => x.name.toLowerCase().includes(e.target.value.toLowerCase())).slice(0, 15))
-        this.shadowRoot.querySelector(".listbox").removeAttribute('hidden')        
+    liMouseOver(e) {
+        const lis = this.shadowRoot.querySelector('ul').children;
+        for (var i = 0; i < lis.length; i++) {
+            if (lis[i].getAttribute('key') === e.currentTarget.getAttribute('key')) {
+                e.currentTarget.style.background = '#ccc'
+                this.shadowRoot.selectedIndex = i
+            }
+            else {
+                lis[i].style.background = '#fff'
+            }
+        }
     }
-    async onChange(e) {
-        let str = e.target.value
-        this.setAttribute('text', str);
-        await new Promise(r => setTimeout(r, 300));
-        if (str.length == 0 || this.shadowRoot.dataSources.filter(x => x == str).length == 1)
-            this.shadowRoot.querySelector(".listbox").setAttribute('hidden', 'hidden')
+    onInput(e) {
+        this.createUlList(
+            this.shadowRoot.dataSources.filter(x => x.name.toLowerCase().includes(e.target.value.toLowerCase()))
+                .slice(0, 15))
+        this.shadowRoot.querySelector(".listbox").removeAttribute('hidden')
+        this.shadowRoot.selectedIndex = -1;
+    }
+    onKeyDown(e) {
+        switch (e.key) {
+            case 'ArrowDown': {
+                const lis = this.shadowRoot.querySelector('ul').children;
+                if (this.shadowRoot.selectedIndex === -1 && lis.length > 0) {
+                    this.shadowRoot.selectedIndex = 0;
+                    lis[this.shadowRoot.selectedIndex].style.background = '#ccc';
+                }
+                else if (this.shadowRoot.selectedIndex !== -1 && lis.length > 0 && this.shadowRoot.selectedIndex !== lis.length - 1) {
+                    lis[this.shadowRoot.selectedIndex].style.background = '#fff';
+                    this.shadowRoot.selectedIndex += 1;
+                    lis[this.shadowRoot.selectedIndex].style.background = '#ccc';
+                }
+                break;
+            }
+            case 'ArrowUp':
+                const lis = this.shadowRoot.querySelector('ul').children;
+                if (this.shadowRoot.selectedIndex === -1 && lis.length > 0) {
+                    this.shadowRoot.selectedIndex = lis.length - 1;
+                    lis[this.shadowRoot.selectedIndex].style.background = '#ccc';
+                }
+                else if (this.shadowRoot.selectedIndex !== -1 && lis.length > 0 && this.shadowRoot.selectedIndex !== 0) {
+                    lis[this.shadowRoot.selectedIndex].style.background = '#fff';
+                    this.shadowRoot.selectedIndex -= 1;
+                    lis[this.shadowRoot.selectedIndex].style.background = '#ccc';
+                }
+                break;
+            case 'Enter': {
+                const lis = this.shadowRoot.querySelector('ul').children;
+                const key = lis[this.shadowRoot.selectedIndex].getAttribute('key')
+                const value = lis[this.shadowRoot.selectedIndex].getAttribute('value')
 
-        if (this.shadowRoot.onchangeCallbackcallback !== undefined)
+                this.shadowRoot.querySelector('input').value = value;
+                this.shadowRoot.querySelector('input').setAttribute('key', key);
+                this.setAttribute('key', key)
+                this.setAttribute('text', value)
+                this.shadowRoot.querySelector(".listbox").setAttribute('hidden', 'hidden')
+
+                if (key !== undefined && value !== undefined && this.shadowRoot.onchangeCallbackcallback !== undefined)
+                    this.shadowRoot.onchangeCallbackcallback()
+
+                this.shadowRoot.selectedIndex = -1;
+                break;
+            }
+        }
+    }
+    selectedChanged(key) {
+        this.shadowRoot.querySelector('input').value = value;
+        this.shadowRoot.querySelector('input').setAttribute('key', key);
+        this.setAttribute('key', key)
+        this.setAttribute('text', value)
+        this.shadowRoot.querySelector(".listbox").setAttribute('hidden', 'hidden')
+
+        if (key !== undefined && value !== undefined && this.shadowRoot.onchangeCallbackcallback !== undefined)
             this.shadowRoot.onchangeCallbackcallback()
     }
     setValue(txt) {
@@ -78,7 +146,7 @@ class Textbox extends HTMLElement {
     }
     onFocusOut(e) {
         if (this.eventQueue === undefined) {
-            this.eventQueue = [{ 'sender': 'div', 'key': e.currentTarget.getAttribute('key'), 'value': e.currentTarget.getAttribute('value')  }]
+            this.eventQueue = [{ 'sender': 'div', 'key': e.currentTarget.getAttribute('key'), 'value': e.currentTarget.getAttribute('value') }]
             this.eventLoader = setTimeout(this.nextEvent, 200, this)
         }
         else {
@@ -91,11 +159,16 @@ class Textbox extends HTMLElement {
             if (li !== undefined && li.length > 0) {
                 const key = li[0].key;
                 const value = li[0].value;
-                self.shadowRoot.querySelector('input').value = value; 
-                self.shadowRoot.querySelector('input').setAttribute('key', key); 
-                self.setAttribute('key', key) 
-                self.setAttribute('text', value) 
+
+                self.shadowRoot.querySelector('input').value = value;
+                self.shadowRoot.querySelector('input').setAttribute('key', key);
+                self.setAttribute('key', key)
+                self.setAttribute('text', value)
                 self.shadowRoot.querySelector(".listbox").setAttribute('hidden', 'hidden')
+
+                if (key !== undefined && value !== undefined && self.shadowRoot.onchangeCallbackcallback !== undefined)
+                    self.shadowRoot.onchangeCallbackcallback()
+                self.shadowRoot.selectedIndex = -1;
             }
 
             const div = self.eventQueue.filter(x => x.sender === 'div')
