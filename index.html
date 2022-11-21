@@ -173,25 +173,24 @@
 
                     let untracked = document.querySelector('#untrackedCommits')
                     untracked.clearContent()
-                    untracked.setSizes(['3%', '4%', '93%'])
-                    untracked.setTitles(['IssueId', 'RemineVersion', 'Commits']) // 'Title', 'Message', 'Short_id']);
+                    untracked.setSizes(['3%', '3%', '3%', '32%', '51%'])
+                    untracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'Commits']) // 'Title', 'Message', 'Short_id']);
                     untracked.setDataSource(res.untrackedCommits.map(x => {
-
-                        const redmineaTag = x.redmineVersion.name === undefined ? '' : 
-                            createATag(`https://redmine.jotron.com/versions/${x.redmineVersion.id}`, x.redmineVersion.name);
-
+                        
                         return {
-                            'IssueId': x.id,
-                            'RemineVersion': redmineaTag,
+                            'IssueId': x.id === 0 ? 'unknown' : createATag(`https://redmine.jotron.com/issues/${x.id}`, x.id),
+                            'Status': x.redmine.status === undefined ? 'unknown' : x.redmine.status.name,
+                            'Assignee': x.redmine.assigned_to === undefined ? 'unknown' : x.redmine.assigned_to.name,
+                            'Subject': x.redmine.subject === undefined ? 'unknown' : x.redmine.subject,
                             'Commits': document.createElement('table-template')
                                 .setSizes(['3%', '3%', '35%', '51%'])
                                 .setTitles(['Short_Id', 'AuthorName', 'Title', 'Message'])
                                 .setDataSource(x.commits.map((c) => {
 
                                     return {
-                                        'Short_Id': c.short_id,
+                                        'Short_Id': createATag(c.web_url, c.short_id),
                                         'AuthorName': c.author_name,
-                                        'Title': createATag(c.web_url, c.title),
+                                        'Title': c.title,
                                         'Message': c.message,
                                     }
                                 }))
@@ -200,18 +199,18 @@
 
                     var g = res.trackedCommits.map(x => {
                         return {
-                            'IssueId': x.id,
+                            'IssueId': createATag(`https://redmine.jotron.com/issues/${x.id}`, x.id),
                             'Status': x.redmine.status.name,
                             'Assignee': x.redmine.assigned_to === undefined ? '' : x.redmine.assigned_to.name,
-                            'Subject': createATag(`https://redmine.jotron.com/issues/${x.id}`, x.redmine.subject),
+                            'Subject': x.redmine.subject,
                             'Commits': document.createElement('table-template')
                                 .setSizes(['3%', '3%', '35%', '51%'])
                                 .setTitles(x.commit.length > 0 ? ['Short_Id', 'AuthorName', 'Title', 'Message'] : [])
                                 .setDataSource(x.commit.map((c) => {
                                     const ret = {
-                                        'Short_Id': c.commit.short_id,
+                                        'Short_Id': createATag(c.commit.web_url, c.commit.short_id),
                                         'AuthorName': c.commit.author_name,
-                                        'Title': createATag(c.commit.web_url, c.commit.title),
+                                        'Title': c.commit.title,
                                         'Message': c.commit.message
                                     }
                                     return ret;

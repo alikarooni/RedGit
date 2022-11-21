@@ -92,7 +92,7 @@ async function getIssues(req, res) {
         if (id === 0) {
             id = getIssueId(x.message)
         }
-        return { 'id': id, 'commit': x, 'redmineVersion': '' }
+        return { 'id': id, 'commit': x, 'redmine': '' }
     });
 
     var result = redmines.map((r, i) => {
@@ -107,8 +107,9 @@ async function getIssues(req, res) {
         if (any === 0) {
             if (commits[i].id !== 0) {
                 const issue = JSON.parse(await redmine.getIssue(commits[i].id))
-                if (issue !== undefined && issue.issues !== undefined && issue.issues.length > 0)
-                    commits[i].redmineVersion = issue.issues[0].fixed_version
+                if (issue !== undefined && issue.issues !== undefined && issue.issues.length > 0) {
+                    commits[i].redmine = issue.issues[0]
+                }
             }
 
             if (commitIdSet.has(commits[i].id)) {
@@ -122,7 +123,7 @@ async function getIssues(req, res) {
             else {
                 commitIdSet.add(commits[i].id)
                 untrackedCommits.push({
-                    'id': commits[i].id, 'redmineVersion': commits[i].redmineVersion, 'commits': [commits[i].commit]
+                    'id': commits[i].id, 'redmine': commits[i].redmine, 'commits': [commits[i].commit]
                 })
             }
         }
