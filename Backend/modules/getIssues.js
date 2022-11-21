@@ -1,9 +1,14 @@
+const configloader = require('../configLoader')
 const redmine = require('../redmine')
 const gitlab = require('../gitlab')
 const url = require('url');
-
+let gitlabpagelimit = 5;
 
 async function getCommits(query) {
+    if (gitlabpagelimit === '') {
+        gitlabpagelimit = await configloader.gitlabPageLimit();
+    }
+
     const result = []
     const any = (arr, tag) => {
         let result = false;
@@ -30,7 +35,6 @@ async function getCommits(query) {
             const tags = JSON.parse(tagsPromisesResult[i])
 
             if (any(tags, query.gitlabendpoint)) {               
-                console.log('startTag has been founded:', query.gitlabendpoint, tags, commitsJson[i].id)
                 brk = true;
             }
             else {
@@ -40,8 +44,10 @@ async function getCommits(query) {
             if (brk) break;
         }
 
-        if (brk || pageNumber > 5) {
-            if (!brk) console.log('pageNumber break');
+        if (brk || gitlabpagelimit > 5) {
+            if (!brk) 
+                console.log(`Gitlab search limited to ${gitlabpagelimit} pages.`);
+            
             break;
         }
     }
@@ -59,7 +65,7 @@ function querySpliter(query) {
 async function getIssues(req, res) {
     var requrl = url.parse(req.url)
     const query = querySpliter(requrl.query)
-    console.log('query', query)
+    //console.log('query', query)
 
     getIssueId = (txt) => {
         let startIndex = txt.indexOf('#')

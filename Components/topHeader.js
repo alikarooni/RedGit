@@ -9,7 +9,6 @@ template.innerHTML = `
     text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
     text-align: center;
 }
-
     header h1 {
         font-size: 30px;
         line-height: 38px;
@@ -20,13 +19,12 @@ template.innerHTML = `
         text-shadow: 0 1px 1px rgba(255,255,255,0.6);
     }
 </style>
-
-    <header>
-        <b><h1>Red-Git</h1></b>
-    </header>   
+<header>
+    <b><h1>Red-Git</h1></b>
+</header>   
 `;
 
-class headertop extends HTMLElement {
+class topHeader extends HTMLElement {
     constructor() {
         super();        
         this.attachShadow({ mode: 'open' });
@@ -40,4 +38,4 @@ class headertop extends HTMLElement {
     render() {
     }
 }
-window.customElements.define('header-top', headertop);
+window.customElements.define('top-header', topHeader);

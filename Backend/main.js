@@ -1,6 +1,4 @@
-const redmine = require('./redmine')
-const gitlab = require('./gitlab')
-const spa = require('./modules/singlePageApplication')
+const pageContect = require('./modules/pageContent')
 const pageload = require('./modules/pageLoad')
 const getIssues = require('./modules/getIssues')
 const http = require('http');
@@ -8,15 +6,15 @@ const url = require('url');
 
 const server = http.createServer(async (req, res) => {
     var requrl = url.parse(req.url)
-
+    
     switch (requrl.pathname) {
         case '/':
         case '/style.css':
-        case '/components/headertop.js':
+        case '/components/topHeader.js':
         case '/components/textbox.js':
         case '/components/tableTemplate.js':
-        case '/components/datetimetextbox.js':
-            await spa.get(req, res)
+        case '/components/datetimeTextbox.js':
+            await pageContect.get(req, res)
             break;
 
         case "/api/redmine/getprojects":

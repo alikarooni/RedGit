@@ -6,7 +6,7 @@
 </head>
 <body>
 
-    <header-top name="test"></header-top>
+    <top-header name="test"></top-header>
     <div class="container">
         <div class="options clearfix">
             <div class='part'>
@@ -48,9 +48,9 @@
 
 
     <!-- scripts -->
-    <script src="components/headertop.js"></script>
+    <script src="components/topHeader.js"></script>
     <script src="components/textbox.js"></script>
-    <script src="components/datetimetextbox.js"></script>
+    <script src="components/datetimeTextbox.js"></script>
     <script src="components/tableTemplate.js"></script>
 
     <script>        
@@ -178,10 +178,10 @@
                     untracked.setDataSource(res.untrackedCommits.map(x => {
                         
                         return {
-                            'IssueId': x.id === 0 ? 'unknown' : createATag(`https://redmine.jotron.com/issues/${x.id}`, x.id),
-                            'Status': x.redmine.status === undefined ? 'unknown' : x.redmine.status.name,
-                            'Assignee': x.redmine.assigned_to === undefined ? 'unknown' : x.redmine.assigned_to.name,
-                            'Subject': x.redmine.subject === undefined ? 'unknown' : x.redmine.subject,
+                            'IssueId': x.id === 0 ? 'Empty' : createATag(`https://redmine.jotron.com/issues/${x.id}`, x.id),
+                            'Status': x.redmine.status === undefined ? 'Empty' : x.redmine.status.name,
+                            'Assignee': x.redmine.assigned_to === undefined ? 'Empty' : x.redmine.assigned_to.name,
+                            'Subject': x.redmine.subject === undefined ? 'Empty' : x.redmine.subject,
                             'Commits': document.createElement('table-template')
                                 .setSizes(['3%', '3%', '35%', '51%'])
                                 .setTitles(['Short_Id', 'AuthorName', 'Title', 'Message'])

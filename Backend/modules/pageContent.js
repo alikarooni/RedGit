@@ -16,10 +16,10 @@ async function get(req, res) {
             res.end();
             break;
 
-        case '/components/headertop.js':
+        case '/components/topHeader.js':
         case '/components/textbox.js':
         case '/components/tableTemplate.js':
-        case '/components/datetimetextbox.js':
+        case '/components/datetimeTextbox.js':
             res.writeHead(200, { 'content-type': 'text/javascript' })
             res.write(await fs.readFileSync(`..${req.url}`, { encoding: 'utf8' }));
             res.end();

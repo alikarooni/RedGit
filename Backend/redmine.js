@@ -1,11 +1,16 @@
+const configloader = require('./configloader')
 const request = require('request');
-const redmineAccessKey = 'a613b08fc136d4a77e4726957789f0cdf9a67255';
+let redminetoken = '';
 
 async function redmineFetch(url, parameters="") {
+    if (redminetoken === '') {
+        redminetoken = await configloader.redmineToken();
+    }
+
     async function get() {
         return new Promise((resolve, reject) => {
             const options = {
-                url: `https://redmine.jotron.com/${url}?key=${redmineAccessKey}${parameters}`,
+                url: `https://redmine.jotron.com/${url}?key=${redminetoken}${parameters}`,
             }
             request(options, (error, response, body) => {
                 if (!error && response.statusCode === 200) {
