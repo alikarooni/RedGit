@@ -6,14 +6,14 @@ const url = require('url');
 
 const server = http.createServer(async (req, res) => {
     var requrl = url.parse(req.url)
-    
+
     switch (requrl.pathname) {
         case '/':
-        case '/style.css':
-        case '/components/topHeader.js':
-        case '/components/textbox.js':
-        case '/components/tableTemplate.js':
-        case '/components/datetimeTextbox.js':
+        case '/Content/style.css':
+        case '/uicomponents/topHeader.js':
+        case '/uicomponents/textbox.js':
+        case '/uicomponents/tableTemplate.js':
+        case '/uicomponents/datetimeTextbox.js':
             await pageContect.get(req, res)
             break;
 

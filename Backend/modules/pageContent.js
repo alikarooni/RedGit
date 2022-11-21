@@ -10,16 +10,16 @@ async function get(req, res) {
         res.write(await fs.readFileSync('../index.html', { encoding: 'utf8' }));
         res.end();
             break;
-        case '/style.css':
+        case '/Content/style.css':
             res.writeHead(200, { 'content-type': 'text/css' })
             res.write(await fs.readFileSync(`../${req.url}`, { encoding: 'utf8' }));
             res.end();
             break;
 
-        case '/components/topHeader.js':
-        case '/components/textbox.js':
-        case '/components/tableTemplate.js':
-        case '/components/datetimeTextbox.js':
+        case '/uicomponents/topHeader.js':
+        case '/uicomponents/textbox.js':
+        case '/uicomponents/tableTemplate.js':
+        case '/uicomponents/datetimeTextbox.js':
             res.writeHead(200, { 'content-type': 'text/javascript' })
             res.write(await fs.readFileSync(`..${req.url}`, { encoding: 'utf8' }));
             res.end();
