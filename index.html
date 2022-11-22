@@ -173,7 +173,7 @@
 
                     let untracked = document.querySelector('#untrackedCommits')
                     untracked.clearContent()
-                    untracked.setSizes(['3%', '3%', '3%', '32%', '51%'])
+                    untracked.setSizes(['3%', '3%', '3%', '15%', '68%'])
                     untracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'Commits']) // 'Title', 'Message', 'Short_id']);
                     untracked.setDataSource(res.untrackedCommits.map(x => {
                         
@@ -220,7 +220,7 @@
 
                     let tracked = document.querySelector('#trackedCommits')
                     tracked.clearContent()
-                    tracked.setSizes(['3%', '3%', '3%', '32%', '51%'])
+                    tracked.setSizes(['3%', '3%', '3%', '15%', '68%'])
                     tracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'Commits']);
                     tracked.setDataSource(g);
                 });
