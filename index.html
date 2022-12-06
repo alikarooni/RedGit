@@ -169,26 +169,28 @@
                 .then(async (response) => {
                     this.innerText = "Search"
                     const res = await response.json();
-                    //console.log('issues data:', res)
+                    console.log('issues data:', res)
 
                     let untracked = document.querySelector('#untrackedCommits')
                     untracked.clearContent()
-                    untracked.setSizes(['3%', '3%', '3%', '15%', '68%'])
-                    untracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'Commits']) // 'Title', 'Message', 'Short_id']);
+                    untracked.setSizes(['3%', '3%', '3%', '11%', '4%', '62%'])
+                    untracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'TargetBranch', 'Commits']) // 'Title', 'Message', 'Short_id']);
                     untracked.setDataSource(res.untrackedCommits.map(x => {
                         
                         return {
-                            'IssueId': x.id === 0 ? 'Empty' : createATag(`https://redmine.jotron.com/issues/${x.id}`, x.id),
+                            'IssueId': x.id === 0 ? 'Empty' : createATag(`https://redmine.jotron.com/issues/${x.id}`, x.id),                            
                             'Status': x.redmine.status === undefined ? 'Empty' : x.redmine.status.name,
                             'Assignee': x.redmine.assigned_to === undefined ? 'Empty' : x.redmine.assigned_to.name,
                             'Subject': x.redmine.subject === undefined ? 'Empty' : x.redmine.subject,
+                            'TargetBranch': x.redmine.fixed_version === undefined ? 'Empty' : x.redmine.fixed_version.name,
                             'Commits': document.createElement('table-template')
-                                .setSizes(['3%', '3%', '35%', '51%'])
-                                .setTitles(['Short_Id', 'AuthorName', 'Title', 'Message'])
+                                .setSizes(['3%', '10%','3%', '28%', '46%'])
+                                .setTitles(['Short_Id', 'CommittedDate', 'AuthorName', 'Title', 'Message'])
                                 .setDataSource(x.commits.map((c) => {
 
                                     return {
                                         'Short_Id': createATag(c.web_url, c.short_id),
+                                        'CommittedDate': `${new Date(c.committed_date).toLocaleDateString()}-${new Date(c.committed_date).toLocaleTimeString()} `,
                                         'AuthorName': c.author_name,
                                         'Title': c.title,
                                         'Message': c.message,
@@ -203,12 +205,14 @@
                             'Status': x.redmine.status.name,
                             'Assignee': x.redmine.assigned_to === undefined ? '' : x.redmine.assigned_to.name,
                             'Subject': x.redmine.subject,
+                            'TargetBranch': x.redmine.fixed_version === undefined ? 'Empty' : x.redmine.fixed_version.name,
                             'Commits': document.createElement('table-template')
-                                .setSizes(['3%', '3%', '35%', '51%'])
-                                .setTitles(x.commit.length > 0 ? ['Short_Id', 'AuthorName', 'Title', 'Message'] : [])
+                                .setSizes(['3%', '10%', '3%', '28%', '46%'])
+                                .setTitles(x.commit.length > 0 ? ['Short_Id', 'CommittedDate', 'AuthorName', 'Title', 'Message'] : [])
                                 .setDataSource(x.commit.map((c) => {
                                     const ret = {
                                         'Short_Id': createATag(c.commit.web_url, c.commit.short_id),
+                                        'CommittedDate': `${new Date(c.commit.committed_date).toLocaleDateString()}-${new Date(c.commit.committed_date).toLocaleTimeString()} `,
                                         'AuthorName': c.commit.author_name,
                                         'Title': c.commit.title,
                                         'Message': c.commit.message
@@ -220,8 +224,8 @@
 
                     let tracked = document.querySelector('#trackedCommits')
                     tracked.clearContent()
-                    tracked.setSizes(['3%', '3%', '3%', '15%', '68%'])
-                    tracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'Commits']);
+                    tracked.setSizes(['3%', '3%', '3%', '11%', '4%', '62%'])
+                    tracked.setTitles(['IssueId', 'Status', 'Assignee', 'Subject', 'TargetBranch', 'Commits']);
                     tracked.setDataSource(g);
                 });
         });
